@@ -3,7 +3,7 @@ cam
 
 ## Mac Setup
 
-Copy xu1.pem SSH key to this directory and set permissions:
+Copy your SSH key (for example xu1.pem) to this directory and set permissions:
 
     chmod 400 xu1.pem
 
