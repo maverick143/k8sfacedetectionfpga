@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wsserver
+  namespace: cam
+spec:
+  selector:
+    matchLabels:
+      app: wsserver
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: wsserver
+    spec:
+      containers:
+      - name: wsserver
+        image: 898843949075.dkr.ecr.us-east-1.amazonaws.com/wsserver
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: CAMSERVER
+          value: "http://camserver:80"
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: redis
+              key: redisHost
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wsserver
+  namespace: cam
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: http
+  type: NodePort
+  selector:
+    app: wsserver

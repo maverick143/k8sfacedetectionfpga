@@ -1,0 +1,29 @@
+version: '3'
+services:
+  camserver:
+    build:
+      context: ../camserver
+    volumes:
+      - ../camserver:/app
+  campublisher:
+    build:
+      context: ../campublisher
+    volumes:
+      - ../campublisher:/app
+  wsserver:
+    build:
+      context: ../wsserver
+    volumes:
+      - ../wsserver:/app
+    command: ["npm", "run-script", "dev"]
+  camworker:
+    build:
+      context: ../camworker
+      dockerfile: dev.Dockerfile
+    environment:
+      REDIS: redis://redis:6379
+    links:
+      - redis
+    volumes:
+      - ../camworker:/app
+    command: ["camworker"]

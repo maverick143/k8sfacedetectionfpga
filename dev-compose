@@ -1,0 +1,6 @@
+#!/bin/bash
+# Run dev docker compose commands
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+export COMPOSE_PROJECT_NAME=camserver
+exec docker-compose  -f compose/docker-compose.yml -f compose/docker-compose.dev.yml $@

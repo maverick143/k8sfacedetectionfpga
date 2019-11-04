@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: camworker
+  namespace: cam
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      name: camworker
+  template:
+    metadata:
+      labels:
+        name: camworker
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        nodeType: xilinx
+      containers:
+      - image: 898843949075.dkr.ecr.us-east-1.amazonaws.com/camworker
+        name: camworker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            xilinx.com/fpga-xilinx_aws-vu9p-f1-04261818_dynamic_5_0-0: 1
+        env:
+        - name: REDIS
+          valueFrom:
+            configMapKeyRef:
+              name: redis
+              key: redisUrl
+        volumeMounts:
+        - name: xilinx
+          readOnly: true
+          mountPath: /opt/xilinx
+      volumes:
+      - name: xilinx
+        hostPath:
+          path: /opt/xilinx
+          type: Directory

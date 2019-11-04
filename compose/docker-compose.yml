@@ -1,0 +1,23 @@
+version: '3'
+services:
+  camserver:
+    image: 898843949075.dkr.ecr.us-east-1.amazonaws.com/camserver
+  campublisher:
+    image: 898843949075.dkr.ecr.us-east-1.amazonaws.com/campublisher
+    environment:
+      REDIS: redis://redis:6379
+    links:
+      - redis
+  wsserver:
+    image: 898843949075.dkr.ecr.us-east-1.amazonaws.com/wsserver
+    environment:
+      CAMSERVER: "http://camserver:6000"
+      REDIS_HOST: "redis"
+    links:
+      - redis
+    ports:
+      - "6354:8080"
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"

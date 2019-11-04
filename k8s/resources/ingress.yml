@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: cam-ingress
+  namespace: cam
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:898843949075:certificate/d572bdd7-2417-44fa-a18d-5e94ca64695c
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/success-codes: 200,204
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /ws/*
+        backend:
+          serviceName: wsserver
+          servicePort: 80
+      - path: /*
+        backend:
+          serviceName: camserver
+          servicePort: 80
+      - path: /*
+        backend:
+          serviceName: camserver
+          servicePort: 80
+

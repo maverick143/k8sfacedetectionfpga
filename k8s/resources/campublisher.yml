@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: campublisher
+  namespace: cam
+spec:
+  selector:
+    matchLabels:
+      app: campublisher
+  template:
+    metadata:
+      labels:
+        app: campublisher
+    spec:
+      containers:
+      - name: campublisher
+        image: 898843949075.dkr.ecr.us-east-1.amazonaws.com/campublisher
+        imagePullPolicy: Always
+        env:
+        - name: REDIS
+          valueFrom:
+            configMapKeyRef:
+              name: redis
+              key: redisUrl

@@ -1,0 +1,88 @@
+<html>
+<body>
+<h1>Convert Video To Image Frames</h1>
+<input type="file" accept="video/*" />
+<p id="progress"></p>
+<script src="FileSaver.js"></script>
+<script src="jszip.js"></script>
+<script>
+let progressLog = document.getElementById('progress')
+function _log(...message) {
+  console.log(...message)
+  let div = document.createElement('div')
+  div.innerText = message.join(' ')
+  progressLog.prepend(div)
+}
+async function extractFramesFromVideo(videoUrl, zip, fps=10) {
+  return new Promise(async (resolve) => {
+
+    // fully download it first (no buffering):
+    // let videoBlob = await fetch(videoUrl).then(r => r.blob());
+    let videoObjectUrl = URL.createObjectURL(videoUrl);
+    let video = document.createElement("video");
+
+    let seekResolve;
+    video.addEventListener('seeked', async function() {
+      if(seekResolve) seekResolve();
+    });
+    _log("Process", videoObjectUrl)
+    video.src = videoObjectUrl;
+
+    // workaround chromium metadata bug (https://stackoverflow.com/q/38062864/993683)
+    while((video.duration === Infinity || isNaN(video.duration)) && video.readyState < 2) {
+      await new Promise(r => setTimeout(r, 1000));
+      video.currentTime = 10000000*Math.random();
+    }
+    let duration = video.duration;
+
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
+
+    let aspectRatio = video.videoHeight / video.videoWidth
+    _log("Aspect Ratio", aspectRatio)
+    let [w, h] = [320, 320 * aspectRatio]
+    _log(`Video size ${w}x${h}`)
+    canvas.width =  w;
+    canvas.height = h;
+
+    let frames = 0
+    let interval = 1 / fps;
+    let currentTime = 0;
+
+    while(currentTime < duration) {
+      frames += 1
+
+      let frameId = frames.toString().padStart(5, '0')
+
+      video.currentTime = currentTime;
+      await new Promise(r => seekResolve=r);
+      _log("Draw frame", frameId)
+      context.drawImage(video, 0, 0, w, h);
+      await new Promise((res, rej) => {
+          return canvas.toBlob(res, 'image/jpeg')
+        }).then((blob) => {
+          zip.file(`img${frameId}.jpg`, blob)
+        })
+
+      currentTime += interval;
+    }
+    resolve()
+  })
+}
+
+async function extractFrames(e) {
+    e.preventDefault()
+
+    let zip = new JSZip()
+    let img = zip.folder("images")
+    await extractFramesFromVideo(this.files[0], img)
+    _log("Generating Zip...")
+    zip.generateAsync({type:"blob"}).then(function(content) {
+        _log("Save to file")
+        saveAs(content, "video.zip")
+    })
+}
+document.querySelector('input').addEventListener('change', extractFrames, false)
+</script>
+</body>
+</html>
