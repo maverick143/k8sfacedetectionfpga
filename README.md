@@ -1,7 +1,7 @@
 cam
 ===
 
-## Mac Setup
+## Macintosh Setup
 
 Copy your SSH key (for example xu1.pem) to this directory and set permissions:
 
